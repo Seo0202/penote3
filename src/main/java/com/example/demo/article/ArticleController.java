@@ -24,4 +24,10 @@ public class ArticleController {
         model.addAttribute("article", articleService.findById(id));
         return "articles/show";
     }
+
+    @GetMapping("/articles/new")
+    public String newArticle(Model model) {
+        model.addAttribute("article", new ArticleRequest());
+        return "articles/new";
+    }
 }
