@@ -1,5 +1,6 @@
 package com.example.demo.article;
 
+import com.example.demo.comment.CommentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +22,9 @@ class ArticleServiceTest {
 
     @Mock
     ArticleRepository articleRepository;
+
+    @Mock
+    CommentRepository commentRepository;
 
     @InjectMocks
     ArticleService articleService;
@@ -77,6 +81,7 @@ class ArticleServiceTest {
 
         articleService.delete(1L);
 
+        verify(commentRepository).deleteByArticleId(1L);
         verify(articleRepository).delete(article);
     }
 

@@ -1,5 +1,6 @@
 package com.example.demo.article;
 
+import com.example.demo.comment.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import java.util.List;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public Long create(ArticleRequest articleRequest) {
@@ -41,7 +43,9 @@ public class ArticleService {
 
     @Transactional
     public void delete(Long id) {
-        articleRepository.delete(getArticle(id));
+        Article article = getArticle(id);
+        commentRepository.deleteByArticleId(id);
+        articleRepository.delete(article);
     }
 
     private Article getArticle(Long id) {
