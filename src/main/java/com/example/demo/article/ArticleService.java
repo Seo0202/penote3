@@ -19,9 +19,19 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public ArticleResponse findById(Long id) {
-        Article article = articleRepository.findById(id)
+        return ArticleResponse.from(getArticle(id));
+    }
+
+    @Transactional
+    public Long update(Long id, ArticleRequest articleRequest) {
+        Article article = getArticle(id);
+        article.update(articleRequest.getTitle(), articleRequest.getContent());
+        return article.getId();
+    }
+
+    private Article getArticle(Long id) {
+        return articleRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "해당 게시글이 없습니다. id=" + id));
-        return ArticleResponse.from(article);
     }
 }
