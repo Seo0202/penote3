@@ -22,9 +22,17 @@
         <td th:text="${comment.content}">내용</td>
         <td th:text="${comment.author}">작성자</td>
         <td th:text="${comment.createdAt != null} ? ${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')} : ''">2026-01-01 00:00</td>
+        <td>
+            <a th:href="@{/articles/{articleId}/comments/{id}/edit(articleId=${article.id}, id=${comment.id})}">수정</a>
+            <form th:action="@{/articles/{articleId}/comments/{id}(articleId=${article.id}, id=${comment.id})}"
+                  method="post" style="display: inline">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit">삭제</button>
+            </form>
+        </td>
     </tr>
     <tr th:if="${#lists.isEmpty(commentList)}">
-        <td colspan="4">작성된 댓글이 없습니다.</td>
+        <td colspan="5">작성된 댓글이 없습니다.</td>
     </tr>
     </tbody>
     </table>
