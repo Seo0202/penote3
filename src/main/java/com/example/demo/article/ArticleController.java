@@ -1,5 +1,7 @@
 package com.example.demo.article;
 
+import com.example.demo.comment.CommentRequest;
+import com.example.demo.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final CommentService commentService;
 
     @GetMapping("/articles")
     public String list(Model model) {
@@ -43,6 +46,8 @@ public class ArticleController {
     @GetMapping("/articles/{id}")
     public String show(@PathVariable Long id, Model model) {
         model.addAttribute("article", articleService.findById(id));
+        model.addAttribute("commentList", commentService.findAllByArticleId(id));
+        model.addAttribute("comment", new CommentRequest());
         return "articles/show";
     }
 
