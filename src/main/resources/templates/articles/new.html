@@ -10,16 +10,20 @@
         <p>
             <label for="title">제목</label><br>
             <input type="text" id="title" th:field="*{title}">
+            <span th:errors="*{title}" style="color: red"></span>
         </p>
         <p>
             <label for="author">작성자</label><br>
             <input type="text" id="author" th:field="*{author}">
+            <span th:errors="*{author}" style="color: red"></span>
         </p>
         <p>
             <label for="content">내용</label><br>
             <textarea id="content" rows="10" cols="50" th:field="*{content}"></textarea>
+            <span th:errors="*{content}" style="color: red"></span>
         </p>
         <button type="submit">등록</button>
+        <a th:href="@{/articles}">취소</a>
     </form>
 </body>
 </html>

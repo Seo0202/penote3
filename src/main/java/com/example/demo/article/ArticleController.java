@@ -1,9 +1,16 @@
 package com.example.demo.article;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 @RequiredArgsConstructor
@@ -11,8 +18,24 @@ public class ArticleController {
 
     private final ArticleService articleService;
 
+    @GetMapping("/articles")
+    public String list(Model model) {
+        model.addAttribute("articleList", articleService.findAll());
+        return "articles/list";
+    }
+
+    @GetMapping("/articles/new")
+    public String newArticle(Model model) {
+        model.addAttribute("article", new ArticleRequest());
+        return "articles/new";
+    }
+
     @PostMapping("/articles")
-    public String create(ArticleRequest articleRequest) {
+    public String create(@Valid @ModelAttribute("article") ArticleRequest articleRequest,
+                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "articles/new";
+        }
         Long id = articleService.create(articleRequest);
         return "redirect:/articles/" + id;
     }
@@ -23,21 +46,24 @@ public class ArticleController {
         return "articles/show";
     }
 
-    @GetMapping("/articles/new")
-    public String newArticle(Model model) {
-        model.addAttribute("article", new ArticleRequest());
-        return "articles/new";
-    }
-
     @GetMapping("/articles/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
-        model.addAttribute("article", articleService.findById(id));
+        ArticleResponse response = articleService.findById(id);
+        model.addAttribute("article", ArticleUpdateRequest.from(response));
+        addEditAttributes(model, response);
         return "articles/edit";
     }
 
     @PatchMapping("/articles/{id}")
-    public String update(@PathVariable Long id, ArticleRequest articleRequest) {
-        articleService.update(id, articleRequest);
+    public String update(@PathVariable Long id,
+                         @Valid @ModelAttribute("article") ArticleUpdateRequest request,
+                         BindingResult bindingResult,
+                         Model model) {
+        if (bindingResult.hasErrors()) {
+            addEditAttributes(model, articleService.findById(id));
+            return "articles/edit";
+        }
+        articleService.update(id, request);
         return "redirect:/articles/" + id;
     }
 
@@ -47,9 +73,8 @@ public class ArticleController {
         return "redirect:/articles";
     }
 
-    @GetMapping("/articles")
-    public String list(Model model) {
-        model.addAttribute("articleList", articleService.findAll());
-        return "articles/list";
+    private void addEditAttributes(Model model, ArticleResponse response) {
+        model.addAttribute("articleId", response.getId());
+        model.addAttribute("author", response.getAuthor());
     }
 }
