@@ -1,5 +1,8 @@
-package com.example.demo.article;
+package com.example.demo.comment;
 
+import com.example.demo.article.Article;
+import com.example.demo.article.ArticleNotFoundException;
+import com.example.demo.article.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,43 +12,51 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleService {
+public class CommentService {
 
+    private final CommentRepository commentRepository;
     private final ArticleRepository articleRepository;
 
     @Transactional
-    public Long create(ArticleRequest articleRequest) {
-        return articleRepository.save(articleRequest.toEntity()).getId();
+    public Long create(Long articleId, CommentRequest commentRequest) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ArticleNotFoundException(articleId));
+        return commentRepository.save(commentRequest.toEntity(article)).getId();
     }
 
     @Transactional(readOnly = true)
-    public ArticleResponse findById(Long id) {
-        return ArticleResponse.from(getArticle(id));
+    public CommentResponse findById(Long articleId, Long commentId) {
+        return CommentResponse.from(getCommentOf(articleId, commentId));
     }
 
     @Transactional(readOnly = true)
-    public List<ArticleResponse> findAll() {
-        List<ArticleResponse> articleResponses = new ArrayList<>();
-        for (Article article : articleRepository.findAllByOrderByIdDesc()) {
-            articleResponses.add(ArticleResponse.from(article));
+    public List<CommentResponse> findAllByArticleId(Long articleId) {
+        List<CommentResponse> commentResponses = new ArrayList<>();
+        for (Comment comment : commentRepository.findByArticleIdOrderByIdAsc(articleId)) {
+            commentResponses.add(CommentResponse.from(comment));
         }
-        return articleResponses;
+        return commentResponses;
     }
 
     @Transactional
-    public Long update(Long id, ArticleUpdateRequest request) {
-        Article article = getArticle(id);
-        article.update(request.getTitle(), request.getContent());
-        return article.getId();
+    public Long update(Long articleId, Long commentId, CommentUpdateRequest request) {
+        Comment comment = getCommentOf(articleId, commentId);
+        comment.update(request.getContent());
+        return comment.getId();
     }
 
     @Transactional
-    public void delete(Long id) {
-        articleRepository.delete(getArticle(id));
+    public void delete(Long articleId, Long commentId) {
+        commentRepository.delete(getCommentOf(articleId, commentId));
     }
 
-    private Article getArticle(Long id) {
-        return articleRepository.findById(id)
-                .orElseThrow(() -> new ArticleNotFoundException(id));
+    // 댓글이 존재하고, 그 글(articleId)의 댓글일 때만 돌려준다.
+    private Comment getCommentOf(Long articleId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(commentId));
+        if (!comment.getArticle().getId().equals(articleId)) {
+            throw new CommentNotFoundException(commentId);
+        }
+        return comment;
     }
 }

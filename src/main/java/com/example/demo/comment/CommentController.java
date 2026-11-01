@@ -1,80 +1,77 @@
-package com.example.demo.article;
+package com.example.demo.comment;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
-public class ArticleController {
+public class CommentController {
 
-    private final ArticleService articleService;
+    private final CommentService commentService;
 
-    @GetMapping("/articles")
-    public String list(Model model) {
-        model.addAttribute("articleList", articleService.findAll());
-        return "articles/list";
+    @GetMapping("/articles/{articleId}/comments")
+    public String list(@PathVariable Long articleId, Model model) {
+        model.addAttribute("commentList", commentService.findAllByArticleId(articleId));
+        return "comments/list";
     }
 
-    @GetMapping("/articles/new")
-    public String newArticle(Model model) {
-        model.addAttribute("article", new ArticleRequest());
-        return "articles/new";
+    @GetMapping("/articles/{articleId}/comments/new")
+    public String newComment(Model model) {
+        model.addAttribute("comment", new CommentRequest());
+        return "comments/new";
     }
 
-    @PostMapping("/articles")
-    public String create(@Valid @ModelAttribute("article") ArticleRequest articleRequest,
+    @PostMapping("/articles/{articleId}/comments")
+    public String create(@PathVariable Long articleId,
+                         @Valid @ModelAttribute("comment") CommentRequest commentRequest,
                          BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "articles/new";
+            return "comments/new";
         }
-        Long id = articleService.create(articleRequest);
-        return "redirect:/articles/" + id;
+        Long id = commentService.create(articleId, commentRequest);
+        return "redirect:/comments/" + id;
     }
 
-    @GetMapping("/articles/{id}")
-    public String show(@PathVariable Long id, Model model) {
-        model.addAttribute("article", articleService.findById(id));
-        return "articles/show";
+    @GetMapping("/articles/{articleId}/comments/{id}")
+    public String show(@PathVariable Long articleId, @PathVariable Long id, Model model) {
+        model.addAttribute("comment", commentService.findById(articleId, id));
+        return "comments/show";
     }
 
-    @GetMapping("/articles/{id}/edit")
-    public String edit(@PathVariable Long id, Model model) {
-        ArticleResponse response = articleService.findById(id);
-        model.addAttribute("article", ArticleUpdateRequest.from(response));
+    @GetMapping("/articles/{articleId}/comments/{id}/edit")
+    public String edit(@PathVariable Long articleId, @PathVariable Long id, Model model) {
+        CommentResponse response = commentService.findById(articleId, id);
+        model.addAttribute("comment", CommentUpdateRequest.from(response));
         addEditAttributes(model, response);
-        return "articles/edit";
+        return "comments/edit";
     }
 
-    @PatchMapping("/articles/{id}")
-    public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute("article") ArticleUpdateRequest request,
+    @PatchMapping("/articles/{articleId}/comments/{id}")
+    public String update(@PathVariable Long articleId,
+                         @PathVariable Long id,
+                         @Valid @ModelAttribute("comment") CommentUpdateRequest request,
                          BindingResult bindingResult,
                          Model model) {
         if (bindingResult.hasErrors()) {
-            addEditAttributes(model, articleService.findById(id));
-            return "articles/edit";
+            addEditAttributes(model, commentService.findById(articleId, id));
+            return "comments/edit";
         }
-        articleService.update(id, request);
-        return "redirect:/articles/" + id;
+        commentService.update(articleId, id, request);
+        return "redirect:/comments/" + id;
     }
 
-    @DeleteMapping("/articles/{id}")
-    public String delete(@PathVariable Long id) {
-        articleService.delete(id);
-        return "redirect:/articles";
+    @DeleteMapping("/articles/{articleId}/comments/{id}")
+    public String delete(@PathVariable Long articleId, @PathVariable Long id) {
+        commentService.delete(articleId, id);
+        return "redirect:/comments";
     }
 
-    private void addEditAttributes(Model model, ArticleResponse response) {
-        model.addAttribute("articleId", response.getId());
+    private void addEditAttributes(Model model, CommentResponse response) {
+        model.addAttribute("commentId", response.getId());
         model.addAttribute("author", response.getAuthor());
     }
 }
