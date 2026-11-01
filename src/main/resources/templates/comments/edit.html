@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>댓글 수정</title>
+</head>
+<body>
+    <h1>댓글 수정</h1>
+    <p th:if="${commentError}" th:text="${commentError}" style="color: red"></p>
+    <form th:action="@{/articles/{articleId}/comments/{id}(articleId=${articleId}, id=${commentId})}"
+          th:object="${comment}" method="post">
+        <input type="hidden" name="_method" value="patch">
+        <p>작성자: <span th:text="${author}">작성자</span></p>
+        <p>
+            <textarea rows="4" cols="50" th:field="*{content}"></textarea>
+        </p>
+        <button type="submit">수정</button>
+        <a th:href="@{/articles/{articleId}(articleId=${articleId})}">취소</a>
+    </form>
+</body>
+</html>

@@ -5,7 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -13,40 +19,26 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @GetMapping("/articles/{articleId}/comments")
-    public String list(@PathVariable Long articleId, Model model) {
-        model.addAttribute("commentList", commentService.findAllByArticleId(articleId));
-        return "comments/list";
-    }
-
-    @GetMapping("/articles/{articleId}/comments/new")
-    public String newComment(Model model) {
-        model.addAttribute("comment", new CommentRequest());
-        return "comments/new";
-    }
-
     @PostMapping("/articles/{articleId}/comments")
     public String create(@PathVariable Long articleId,
                          @Valid @ModelAttribute("comment") CommentRequest commentRequest,
-                         BindingResult bindingResult) {
+                         BindingResult bindingResult,
+                         RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            return "comments/new";
+            addErrorMessage(redirectAttributes, bindingResult);
+            return "redirect:/articles/" + articleId;
         }
-        Long id = commentService.create(articleId, commentRequest);
-        return "redirect:/comments/" + id;
-    }
-
-    @GetMapping("/articles/{articleId}/comments/{id}")
-    public String show(@PathVariable Long articleId, @PathVariable Long id, Model model) {
-        model.addAttribute("comment", commentService.findById(articleId, id));
-        return "comments/show";
+        commentService.create(articleId, commentRequest);
+        return "redirect:/articles/" + articleId;
     }
 
     @GetMapping("/articles/{articleId}/comments/{id}/edit")
     public String edit(@PathVariable Long articleId, @PathVariable Long id, Model model) {
         CommentResponse response = commentService.findById(articleId, id);
         model.addAttribute("comment", CommentUpdateRequest.from(response));
-        addEditAttributes(model, response);
+        model.addAttribute("articleId", articleId);
+        model.addAttribute("commentId", response.getId());
+        model.addAttribute("author", response.getAuthor());
         return "comments/edit";
     }
 
@@ -55,23 +47,23 @@ public class CommentController {
                          @PathVariable Long id,
                          @Valid @ModelAttribute("comment") CommentUpdateRequest request,
                          BindingResult bindingResult,
-                         Model model) {
+                         RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            addEditAttributes(model, commentService.findById(articleId, id));
-            return "comments/edit";
+            addErrorMessage(redirectAttributes, bindingResult);
+            return "redirect:/articles/" + articleId + "/comments/" + id + "/edit";
         }
         commentService.update(articleId, id, request);
-        return "redirect:/comments/" + id;
+        return "redirect:/articles/" + articleId;
     }
 
     @DeleteMapping("/articles/{articleId}/comments/{id}")
     public String delete(@PathVariable Long articleId, @PathVariable Long id) {
         commentService.delete(articleId, id);
-        return "redirect:/comments";
+        return "redirect:/articles/" + articleId;
     }
 
-    private void addEditAttributes(Model model, CommentResponse response) {
-        model.addAttribute("commentId", response.getId());
-        model.addAttribute("author", response.getAuthor());
+    private void addErrorMessage(RedirectAttributes redirectAttributes, BindingResult bindingResult) {
+        String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
+        redirectAttributes.addFlashAttribute("commentError", message);
     }
 }
