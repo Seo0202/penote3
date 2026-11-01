@@ -34,4 +34,12 @@ public class ArticleService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "해당 게시글이 없습니다. id=" + id));
     }
+
+    @Transactional
+    public void delete(Long id) {
+        Article article = getArticle(id);
+        articleRepository.delete(article);
+    }
+
+
 }

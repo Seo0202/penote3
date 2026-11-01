@@ -3,10 +3,7 @@ package com.example.demo.article;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -42,5 +39,11 @@ public class ArticleController {
     public String update(@PathVariable Long id, ArticleRequest articleRequest) {
         articleService.update(id, articleRequest);
         return "redirect:/articles/" + id;
+    }
+
+    @DeleteMapping("/articles/{id}")
+    public String delete(@PathVariable Long id) {
+        articleService.delete(id);
+        return "redirect:/articles";
     }
 }

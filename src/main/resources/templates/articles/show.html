@@ -9,5 +9,9 @@
     <p>작성자: <span th:text="${article.author}">작성자</span></p>
     <p th:text="${article.content}">내용</p>
     <a th:href="@{/articles/{id}/edit(id=${article.id})}">수정</a>
+    <form th:action="@{/articles/{id}(id=${article.id})}" method="post">
+        <input type="hidden" name="_method" value="delete">
+        <button type="submit">삭제</button>
+    </form>
 </body>
 </html>
