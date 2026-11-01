@@ -1,6 +1,7 @@
 package com.example.demo.common;
 
 import com.example.demo.article.ArticleNotFoundException;
+import com.example.demo.comment.CommentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ArticleNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleArticleNotFound(ArticleNotFoundException e, Model model) {
+        model.addAttribute("message", e.getMessage());
+        return "error/404";
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleCommentNotFound(CommentNotFoundException e, Model model) {
         model.addAttribute("message", e.getMessage());
         return "error/404";
     }
