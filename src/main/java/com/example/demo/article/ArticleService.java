@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
@@ -20,6 +23,15 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public ArticleResponse findById(Long id) {
         return ArticleResponse.from(getArticle(id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ArticleResponse> findAll() {
+        List<ArticleResponse> articleResponses = new ArrayList<>();
+        for (Article article : articleRepository.findAll()) {
+            articleResponses.add(ArticleResponse.from(article));
+        }
+        return articleResponses;
     }
 
     @Transactional

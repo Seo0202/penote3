@@ -46,4 +46,10 @@ public class ArticleController {
         articleService.delete(id);
         return "redirect:/articles";
     }
+
+    @GetMapping("/articles")
+    public String list(Model model) {
+        model.addAttribute("articleList", articleService.findAll());
+        return "articles/list";
+    }
 }
